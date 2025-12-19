@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>מפת הרכבת הקלה תל אביב</title>
+
+	<!-- Leaflet CSS -->
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+		integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+	<!-- Custom CSS -->
+	<link rel="stylesheet" href="style.css">
+
+	<!-- Google Fonts -->
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+	<!-- Custom Search Widget -->
+	<!-- Removed duplicate widget -->
+	<div class="main-container">
+
+		<!-- Sidebar / Overlay -->
+		<div class="search-panel">
+			<div class="search-container">
+				<input type="text" id="search-input" placeholder="חפש כתובת או שכונה..." autocomplete="off">
+				<ul id="search-results" class="hidden"></ul>
+			</div>
+
+			<div class="info-panel">
+				<div class="slider-container">
+					<label for="radius-slider">טווח הליכה (דקות): <span id="radius-value">5</span></label>
+					<input type="range" id="radius-slider" min="1" max="20" value="5">
+				</div>
+				<div id="route-info">
+					<div id="loading" style="display:none">טוען נתונים...</div>
+				</div>
+				<button id="clear-map-btn" class="hidden">נקה מפה</button>
+			</div>
+		</div>
+
+		<!-- Map Container -->
+		<div id="map"></div>
+	</div>
+
+	<!-- Leaflet JS -->
+	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+		integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+	<script src="https://unpkg.com/@turf/turf/turf.min.js"></script>
+
+	<!-- Custom JS -->
+	<script src="script.js?v=1700000018"></script>
+</body>
+
+</html>

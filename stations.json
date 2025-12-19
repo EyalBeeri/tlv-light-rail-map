@@ -1,0 +1,240 @@
+[
+    {
+        "name": "Petah Tikva Central Bus Station",
+        "full_name": "Petah Tikva Central Bus Station",
+        "lat": 32.0949204,
+        "lon": 34.886267,
+        "name_he": "תחנה מרכזית פתח תקווה"
+    },
+    {
+        "name": "Pinsker",
+        "full_name": "Pinsker station, Petah Tikva",
+        "lat": 32.0937354,
+        "lon": 34.8821238,
+        "name_he": "פינסקר"
+    },
+    {
+        "name": "Krol",
+        "full_name": "Krol station",
+        "lat": 32.0919053,
+        "lon": 34.877512,
+        "name_he": "קרול"
+    },
+    {
+        "name": "Dankner",
+        "full_name": "Dankner station",
+        "lat": 32.0909542,
+        "lon": 34.872384,
+        "name_he": "דנקנר"
+    },
+    {
+        "name": "Shaham",
+        "full_name": "Shaham station",
+        "lat": 32.0919406,
+        "lon": 34.861398,
+        "name_he": "שחם"
+    },
+    {
+        "name": "Shenkar",
+        "full_name": "Shenkar station",
+        "lat": 32.0926625,
+        "lon": 34.8533047,
+        "name_he": "שנקר"
+    },
+    {
+        "name": "Kiryat Arye",
+        "full_name": "Kiryat Arye station",
+        "lat": 32.106362,
+        "lon": 34.863805,
+        "name_he": "קריית אריה"
+    },
+    {
+        "name": "Aharonovich",
+        "full_name": "Aharonovich station",
+        "lat": 32.0879219,
+        "lon": 34.8388655,
+        "name_he": "אהרונוביץ'"
+    },
+    {
+        "name": "Ben Gurion",
+        "full_name": "Ben Gurion station, Bnei Brak",
+        "lat": 32.0909203,
+        "lon": 34.8233946,
+        "name_he": "בן גוריון"
+    },
+    {
+        "name": "Bialik",
+        "full_name": "Bialik station, Ramat Gan",
+        "lat": 32.0849863,
+        "lon": 34.8122928,
+        "name_he": "ביאליק"
+    },
+    {
+        "name": "Abba Hillel",
+        "full_name": "Abba Hillel station",
+        "lat": 32.082853,
+        "lon": 34.802366,
+        "name_he": "אבא הלל"
+    },
+    {
+        "name": "Yehudit",
+        "full_name": "Yehudit station",
+        "lat": 32.0703643,
+        "lon": 34.7886062,
+        "name_he": "יהודית"
+    },
+    {
+        "name": "Carlebach",
+        "full_name": "Carlebach station",
+        "lat": 32.0685793,
+        "lon": 34.7830109,
+        "name_he": "קרליבך"
+    },
+    {
+        "name": "Allenby",
+        "full_name": "Allenby station",
+        "lat": 32.0627053,
+        "lon": 34.7748797,
+        "name_he": "אלנבי"
+    },
+    {
+        "name": "Elifelet",
+        "full_name": "Elifelet station",
+        "lat": 32.058341,
+        "lon": 34.7627699,
+        "name_he": "אליפלט"
+    },
+    {
+        "name": "Shalma",
+        "full_name": "Shalma station",
+        "lat": 32.0540628,
+        "lon": 34.7790161,
+        "name_he": "שלמה"
+    },
+    {
+        "name": "Bloomfield Stadium",
+        "full_name": "Bloomfield Stadium station",
+        "lat": 32.0518369,
+        "lon": 34.7615771,
+        "name_he": "אצטדיון בלומפילד"
+    },
+    {
+        "name": "Ehrlich",
+        "full_name": "Ehrlich station",
+        "lat": 32.0460687,
+        "lon": 34.7583647,
+        "name_he": "ארליך"
+    },
+    {
+        "name": "Isakov",
+        "full_name": "Isakov station",
+        "lat": 32.0421438,
+        "lon": 34.7570772,
+        "name_he": "איסקוב"
+    },
+    {
+        "name": "HaBesht",
+        "full_name": "HaBesht station",
+        "lat": 32.0387216,
+        "lon": 34.7558374,
+        "name_he": "הבעש\"ט"
+    },
+    {
+        "name": "Mahrozet",
+        "full_name": "Mahrozet station",
+        "lat": 32.0335751,
+        "lon": 34.751653,
+        "name_he": "מחרוזת"
+    },
+    {
+        "name": "Ha'Atsma'ut",
+        "full_name": "Ha'Atsma'ut station, Bat Yam",
+        "lat": 32.022748,
+        "lon": 34.747715,
+        "name_he": "העצמאות"
+    },
+    {
+        "name": "Rothschild",
+        "full_name": "Rothschild station, Bat Yam",
+        "lat": 32.0267981,
+        "lon": 34.7526076,
+        "name_he": "רוטשילד"
+    },
+    {
+        "name": "Jabotinsky",
+        "full_name": "Jabotinsky station, Bat Yam",
+        "lat": 32.0211709,
+        "lon": 34.7416839,
+        "name_he": "ז'בוטינסקי"
+    },
+    {
+        "name": "Balfour",
+        "full_name": "Balfour station, Bat Yam",
+        "lat": 32.0127262,
+        "lon": 34.742136,
+        "name_he": "בלפור"
+    },
+    {
+        "name": "Binyamin",
+        "full_name": "Binyamin station, Bat Yam",
+        "lat": 32.0163764,
+        "lon": 34.7487926,
+        "name_he": "בנימין"
+    },
+    {
+        "name": "Yoseftal",
+        "full_name": "Yoseftal station, Bat Yam",
+        "lat": 32.0191734,
+        "lon": 34.7416998,
+        "name_he": "יוספטל"
+    },
+    {
+        "name": "Kaf Tet BeNovember",
+        "full_name": "Kaf Tet BeNovember station",
+        "lat": 32.010215,
+        "lon": 34.7540052,
+        "name_he": "כ\"ט בנובמבר"
+    },
+    {
+        "name": "He'Amal",
+        "full_name": "He'Amal station",
+        "lat": 32.006242,
+        "lon": 34.7462241,
+        "name_he": "העמל"
+    },
+    {
+        "name": "HaKomemiyut",
+        "full_name": "HaKomemiyut station",
+        "lat": 32.0022613,
+        "lon": 34.7467555,
+        "name_he": "הקוממיות"
+    },
+    {
+        "name": "Beilinson",
+        "full_name": "Beilinson station",
+        "lat": 32.0886888,
+        "lon": 34.8671956,
+        "name_he": "בילינסון"
+    },
+    {
+        "name": "Gesher Em HaMoshavot",
+        "full_name": "Gesher Em HaMoshavot station",
+        "lat": 32.098985,
+        "lon": 34.829016,
+        "name_he": "גשר אם המושבות"
+    },
+    {
+        "name": "Arlozorov",
+        "full_name": "Arlozorov station, Tel Aviv",
+        "lat": 32.0837,
+        "lon": 34.7961,
+        "name_he": "ארלוזורוב"
+    },
+    {
+        "name": "Sha'ul HaMelech",
+        "full_name": "Sha'ul HaMelech station",
+        "lat": 32.0795,
+        "lon": 34.7933,
+        "name_he": "שאול המלך"
+    }
+]
