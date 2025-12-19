@@ -28,19 +28,34 @@
 		<!-- Sidebar / Overlay -->
 		<div class="search-panel">
 			<div class="search-container">
-				<input type="text" id="search-input" placeholder="חפש כתובת או שכונה..." autocomplete="off">
+				<div class="search-input-wrapper">
+					<input type="text" id="search-input" placeholder="חפש כתובת או שכונה..." autocomplete="off">
+					<button id="locate-me-btn" title="מיקום נוכחי">
+						<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+							stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+							<circle cx="12" cy="12" r="10" />
+							<circle cx="12" cy="12" r="3" />
+						</svg>
+					</button>
+				</div>
 				<ul id="search-results" class="hidden"></ul>
 			</div>
 
 			<div class="info-panel">
-				<div class="slider-container">
-					<label for="radius-slider">טווח הליכה (דקות): <span id="radius-value">5</span></label>
-					<input type="range" id="radius-slider" min="1" max="20" value="5">
+				<div class="panel-header">
+					<div class="panel-handle mobile-only"></div>
+					<button id="toggle-panel-btn" class="mobile-only">הסתר פרטים</button>
 				</div>
-				<div id="route-info">
-					<div id="loading" style="display:none">טוען נתונים...</div>
+				<div class="panel-content">
+					<div class="slider-container">
+						<label for="radius-slider">טווח הליכה (דקות): <span id="radius-value">5</span></label>
+						<input type="range" id="radius-slider" min="1" max="20" value="5">
+					</div>
+					<div id="route-info">
+						<div id="loading" style="display:none">טוען נתונים...</div>
+					</div>
+					<button id="clear-map-btn" class="hidden">נקה מפה</button>
 				</div>
-				<button id="clear-map-btn" class="hidden">נקה מפה</button>
 			</div>
 		</div>
 
@@ -54,7 +69,7 @@
 	<script src="https://unpkg.com/@turf/turf/turf.min.js"></script>
 
 	<!-- Custom JS -->
-	<script src="script.js?v=1700000018"></script>
+	<script src="script.js?v=25"></script>
 </body>
 
 </html>
