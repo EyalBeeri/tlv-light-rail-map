@@ -103,6 +103,12 @@ document.addEventListener('DOMContentLoaded', () => {
 		return 'עתידי';
 	}
 
+	function getPlannedIsochroneKey(station) {
+		const line = station && station.line ? station.line : 'planned';
+		const base = (station && (station.name_he || station.name)) ? (station.name_he || station.name) : '';
+		return `planned:${line}:${base}`;
+	}
+
 	function getPlannedIcon(line) {
 		return line === 'purple' ? plannedPurpleIcon : plannedGreenIcon;
 	}
@@ -117,6 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 
 	function getStationIsochroneName(station) {
+		if (station && station.isochrone_key) return station.isochrone_key;
 		return station.name_he || station.name || '';
 	}
 
@@ -425,18 +432,6 @@ document.addEventListener('DOMContentLoaded', () => {
 				L.geoJSON(polys[minutes], {
 					style: getIsochroneStyle(station),
 					interactive: false
-				}).addTo(currentIsochroneLayerGroup);
-				return;
-			}
-
-			if (station.isPlanned) {
-				const lat = toFiniteNumber(station.lat);
-				const lon = toFiniteNumber(station.lon);
-				if (lat === null || lon === null) return;
-
-				L.circle([lat, lon], {
-					...getIsochroneStyle(station),
-					radius: Math.max(120, minutes * 80)
 				}).addTo(currentIsochroneLayerGroup);
 			}
 		});
@@ -890,13 +885,28 @@ document.addEventListener('DOMContentLoaded', () => {
 			return res.json();
 		})
 		.then((data) => {
-			isochroneData = data;
+			isochroneData = { ...isochroneData, ...(data || {}) };
 			if (stationsData.length > 0) {
 				updateIsochrones(walkingMinutes);
 			}
 		})
 		.catch((error) => {
 			console.error('Failed to load station isochrones:', error);
+		});
+
+	fetch('planned_station_isochrones.json?v=1')
+		.then((res) => {
+			if (!res.ok) throw new Error(`Failed to load planned isochrones (${res.status})`);
+			return res.json();
+		})
+		.then((data) => {
+			isochroneData = { ...isochroneData, ...(data || {}) };
+			if (stationsData.length > 0 || plannedStationsData.length > 0) {
+				updateIsochrones(walkingMinutes);
+			}
+		})
+		.catch((error) => {
+			console.error('Failed to load planned station isochrones:', error);
 		});
 
 	fetch('neighborhoods.json?v=1')
@@ -936,6 +946,7 @@ document.addEventListener('DOMContentLoaded', () => {
 					lat,
 					lon,
 					isPlanned: true,
+					isochrone_key: getPlannedIsochroneKey({ ...stationRaw, line }),
 					name: stationRaw.name_he || stationRaw.name || 'תחנה מתוכננת'
 				};
 
