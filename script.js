@@ -1,4 +1,4 @@
-var __neighborhoodCache = new Map(); // Global backup if needed
+var __neighborhoodCache = new Map();
 
 document.addEventListener('DOMContentLoaded', () => {
 	// Initialize map centered on Tel Aviv
@@ -19,15 +19,45 @@ document.addEventListener('DOMContentLoaded', () => {
 		maxZoom: 20
 	}).addTo(map);
 
+	// --- DOM ---
+	const routeInfoDiv = document.getElementById('route-info');
+	const slider = document.getElementById('radius-slider');
+	const radiusValue = document.getElementById('radius-value');
+	const clearMapBtn = document.getElementById('clear-map-btn');
+	const searchInput = document.getElementById('search-input');
+	const clearSearchBtn = document.getElementById('clear-search-btn');
+	const searchResults = document.getElementById('search-results');
+	const locateBtn = document.getElementById('locate-me-btn');
+
+	searchInput.setAttribute('aria-expanded', 'false');
+
 	// --- State ---
 	let stationsData = [];
 	let isochroneData = {};
+	let walkingMinutes = parseInt(slider.value, 10) || 5;
+
 	let currentIsochroneLayerGroup = L.layerGroup().addTo(map);
 	let currentNeighborhoodLayer = null;
 	let currentRouteLine = null;
 	let currentPin = null;
-	let walkingMinutes = 5;
+
+	let activeSelectionId = 0;
+	let currentSelectionLocation = null;
+	let routeCandidates = [];
+	let selectedRouteStationKey = '';
+	let currentRouteStats = null;
+
+	let activeRouteController = null;
+
 	const neighborhoodCache = new Map();
+	__neighborhoodCache = neighborhoodCache;
+
+	// Search state
+	let searchDebounceId = null;
+	let activeSearchController = null;
+	let activeSearchRequestId = 0;
+	let renderedSearchItems = [];
+	let highlightedSearchIndex = -1;
 
 	// --- Icons ---
 	const stationIcon = L.divIcon({
@@ -45,38 +75,233 @@ document.addEventListener('DOMContentLoaded', () => {
 		popupAnchor: [0, -36]
 	});
 
-	// --- Data Loading ---
-	fetch('stations.json?v=1')
-		.then(res => res.json())
-		.then(data => {
-			stationsData = data;
-			const stationGroup = L.featureGroup().addTo(map);
-			data.forEach(station => {
-				const name = station.name_he || station.name;
-				const marker = L.marker([station.lat, station.lon], { icon: stationIcon }).addTo(stationGroup);
-				marker.bindTooltip(name, { permanent: true, direction: 'bottom', className: 'station-label', offset: [0, 5] });
-				marker.bindPopup(`<div class="station-popup-title">${name}</div>`, { className: 'custom-popup' });
-				marker.on('click', () => map.setView([station.lat, station.lon], 16));
-			});
-			if (Object.keys(isochroneData).length > 0) updateIsochrones(walkingMinutes);
+	function getStationDisplayName(station) {
+		const baseName = station.name_he || station.name || 'תחנה';
+		if (baseName === 'שלמה') return 'שלמה (סלמה)';
+		return baseName;
+	}
+
+	function getStationIsochroneName(station) {
+		return station.name_he || station.name || '';
+	}
+
+	function getStationKey(station) {
+		return station.full_name || station.name_he || station.name || '';
+	}
+
+	function escapeHtml(value) {
+		return String(value || '')
+			.replace(/&/g, '&amp;')
+			.replace(/</g, '&lt;')
+			.replace(/>/g, '&gt;')
+			.replace(/"/g, '&quot;')
+			.replace(/'/g, '&#39;');
+	}
+
+	function toFiniteNumber(value) {
+		const num = Number(value);
+		return Number.isFinite(num) ? num : null;
+	}
+
+	function normalizeText(value) {
+		return String(value || '')
+			.toLowerCase()
+			.replace(/[\u0591-\u05C7]/g, '')
+			.replace(/['"`,./\\-]/g, ' ')
+			.replace(/\s+/g, ' ')
+			.trim();
+	}
+
+	function getGeojsonCenter(geojson) {
+		if (!window.turf || !geojson) return null;
+		try {
+			const center = turf.centerOfMass(geojson);
+			return {
+				lat: center.geometry.coordinates[1],
+				lon: center.geometry.coordinates[0]
+			};
+		} catch (error) {
+			return null;
+		}
+	}
+
+	function formatAddress(data) {
+		const addr = data.address || {};
+		const street = addr.road || addr.pedestrian || '';
+		const number = addr.house_number || '';
+		const neighborhood = addr.neighbourhood || addr.suburb || addr.residential || addr.quarter || '';
+		const city = addr.city || addr.town || addr.village || '';
+
+		let streetPart = street;
+		if (number) streetPart += ` ${number}`;
+
+		const components = [];
+		if (streetPart) components.push(streetPart);
+		if (neighborhood) components.push(neighborhood);
+		if (city) components.push(city);
+
+		if (components.length === 0) {
+			const displayName = typeof data.display_name === 'string' ? data.display_name : '';
+			const fallback = displayName.split(',')[0] || '';
+			return fallback || 'מיקום במפה';
+		}
+
+		return components.join(', ');
+	}
+
+	function formatSearchAddress(item) {
+		const address = item.address || {};
+		const street = address.road || address.pedestrian || address.footway || address.path || '';
+		const houseNumber = address.house_number || '';
+		const neighborhood = address.neighbourhood || address.suburb || address.residential || address.quarter || '';
+		const city = address.city || address.town || address.village || address.municipality || '';
+
+		const primary = (street ? `${street}${houseNumber ? ` ${houseNumber}` : ''}` : '').trim();
+
+		const displayParts = String(item.display_name || '')
+			.split(',')
+			.map((part) => part.trim())
+			.filter(Boolean);
+
+		const label = primary || displayParts[0] || 'כתובת';
+
+		const secondaryParts = [];
+		if (neighborhood && normalizeText(neighborhood) !== normalizeText(label)) secondaryParts.push(neighborhood);
+		if (city && normalizeText(city) !== normalizeText(label) && normalizeText(city) !== normalizeText(neighborhood)) {
+			secondaryParts.push(city);
+		}
+
+		const secondaryLabel = secondaryParts.length > 0
+			? secondaryParts.join(', ')
+			: displayParts.slice(1, 3).join(', ');
+
+		return { label, secondaryLabel };
+	}
+
+	function getSearchItemKey(item) {
+		return `${item.type}|${normalizeText(item.label)}|${normalizeText(item.secondaryLabel)}`;
+	}
+
+	function scoreSearchItem(item, normalizedQuery) {
+		const label = normalizeText(item.label);
+		const secondary = normalizeText(item.secondaryLabel);
+		let score = 0;
+
+		if (label === normalizedQuery) score += 120;
+		else if (label.startsWith(normalizedQuery)) score += 80;
+		else if (label.includes(normalizedQuery)) score += 50;
+
+		if (secondary.includes(normalizedQuery)) score += 20;
+		if (item.type === 'station') score += 35;
+		if (item.type === 'neighborhood') score += 25;
+
+		return score;
+	}
+
+	function clearRouteLine() {
+		if (currentRouteLine) {
+			map.removeLayer(currentRouteLine);
+			currentRouteLine = null;
+		}
+	}
+
+	function abortActiveRouteRequest() {
+		if (activeRouteController) {
+			activeRouteController.abort();
+			activeRouteController = null;
+		}
+	}
+
+	function setRouteDetailsHtml(html) {
+		const routeDetails = document.getElementById('route-details');
+		if (routeDetails) routeDetails.innerHTML = html;
+	}
+
+	function renderRouteDetails(stationName, distanceMeters) {
+		const minutes = Math.max(1, Math.round(distanceMeters / 80));
+		const isClose = minutes <= walkingMinutes;
+
+		setRouteDetailsHtml(`
+			<p><strong>יעד:</strong> ${escapeHtml(stationName)}</p>
+			<p><strong>זמן הליכה:</strong> <span style="font-size: 1.2rem; font-weight: bold;">${minutes} דק'</span></p>
+			<p><strong>מרחק:</strong> ${distanceMeters} מטרים</p>
+			<p style="color: ${isClose ? '#2a9d8f' : '#e63946'}; font-weight: 600; margin-top: 10px;">
+				${isClose ? `מצויין! בטווח ${walkingMinutes} דקות.` : `יותר מ-${walkingMinutes} דקות הליכה.`}
+			</p>
+		`);
+	}
+
+	function highlightRouteStation(stationKey) {
+		const stationButtons = routeInfoDiv.querySelectorAll('.route-station-btn');
+		stationButtons.forEach((button) => {
+			const isActive = button.dataset.stationKey === stationKey;
+			button.classList.toggle('active', isActive);
 		});
+	}
 
-	fetch('station_isochrones.json?v=1')
-		.then(res => res.json())
-		.then(data => {
-			isochroneData = data;
-			if (stationsData.length > 0) updateIsochrones(walkingMinutes);
-		});
+	function updateRouteOriginLabel(label) {
+		const routeOrigin = document.getElementById('route-origin-label');
+		if (routeOrigin) {
+			routeOrigin.innerHTML = `<strong>נקודת מוצא:</strong> ${escapeHtml(label)}`;
+		}
+	}
 
-	fetch('neighborhoods.json?v=1')
-		.then(res => res.json())
-		.then(data => Object.keys(data).forEach(k => neighborhoodCache.set(k, data[k])));
+	function buildRouteCandidates(lat, lng, limit = 6) {
+		return stationsData
+			.map((station) => {
+				const stationLat = toFiniteNumber(station.lat);
+				const stationLon = toFiniteNumber(station.lon);
+				const directDistance = stationLat !== null && stationLon !== null
+					? Math.round(map.distance([lat, lng], [stationLat, stationLon]))
+					: Number.POSITIVE_INFINITY;
 
-	// --- Core Logic ---
+				return {
+					...station,
+					lat: stationLat,
+					lon: stationLon,
+					displayName: getStationDisplayName(station),
+					key: getStationKey(station),
+					directDistance
+				};
+			})
+			.filter((station) => station.lat !== null && station.lon !== null)
+			.sort((a, b) => a.directDistance - b.directDistance)
+			.slice(0, limit);
+	}
+
+	function renderRoutePanel(originLabel, candidates, selectedStationKey) {
+		if (!candidates.length) {
+			routeInfoDiv.innerHTML = '<p>אין תחנות זמינות כרגע.</p>';
+			return;
+		}
+
+		const stationsHtml = candidates.map((station, index) => {
+			const isActive = station.key === selectedStationKey;
+			return `
+				<button
+					type="button"
+					class="route-station-btn${isActive ? ' active' : ''}"
+					data-route-index="${index}"
+					data-station-key="${escapeHtml(station.key)}"
+				>
+					<span class="route-station-name">${escapeHtml(station.displayName)}</span>
+					<span class="route-station-distance">~${station.directDistance} מ'</span>
+				</button>
+			`;
+		}).join('');
+
+		routeInfoDiv.innerHTML = `
+			<h3>מסלולי הליכה לתחנות</h3>
+			<p class="route-origin" id="route-origin-label"><strong>נקודת מוצא:</strong> ${escapeHtml(originLabel)}</p>
+			<div class="route-stations-list">${stationsHtml}</div>
+			<div id="route-details"><div id="loading">מחשב מסלול...</div></div>
+		`;
+	}
+
 	function updateIsochrones(minutes) {
 		currentIsochroneLayerGroup.clearLayers();
-		stationsData.forEach(station => {
-			const name = station.name_he || station.name;
+		stationsData.forEach((station) => {
+			const name = getStationIsochroneName(station);
 			const polys = isochroneData[name];
 			if (polys && polys[minutes]) {
 				L.geoJSON(polys[minutes], {
@@ -87,237 +312,632 @@ document.addEventListener('DOMContentLoaded', () => {
 		});
 	}
 
-	function handleLocationSelect(lat_raw, lng_raw, label) {
-		const lat = parseFloat(lat_raw);
-		const lng = parseFloat(lng_raw);
-		if (currentRouteLine) map.removeLayer(currentRouteLine);
+	function calculateRoute(lat, lng, station, selectionId) {
+		if (!station) return;
+
+		selectedRouteStationKey = station.key;
+		highlightRouteStation(station.key);
+		setRouteDetailsHtml('<div id="loading">מחשב מסלול...</div>');
+
+		abortActiveRouteRequest();
+		activeRouteController = new AbortController();
+
+		const url = `https://routing.openstreetmap.de/routed-foot/route/v1/foot/${lng},${lat};${station.lon},${station.lat}?overview=full&geometries=geojson`;
+		fetch(url, { signal: activeRouteController.signal })
+			.then((res) => {
+				if (!res.ok) throw new Error(`Routing API failed: ${res.status}`);
+				return res.json();
+			})
+			.then((data) => {
+				if (selectionId !== activeSelectionId) return;
+				if (!(data.routes && data.routes[0])) throw new Error('No route returned');
+
+				const route = data.routes[0];
+				const distanceMeters = Math.round(route.distance);
+
+				currentRouteStats = {
+					stationKey: station.key,
+					stationName: station.displayName,
+					distanceMeters
+				};
+
+				renderRouteDetails(station.displayName, distanceMeters);
+
+				clearRouteLine();
+				currentRouteLine = L.geoJSON(route.geometry, {
+					style: { color: '#3b82f6', weight: 5, opacity: 0.8 }
+				}).addTo(map);
+			})
+			.catch((error) => {
+				if (error.name === 'AbortError') return;
+				if (selectionId !== activeSelectionId) return;
+				console.error('Route calculation error:', error);
+
+				currentRouteStats = null;
+				clearRouteLine();
+				setRouteDetailsHtml('<p>לא הצלחנו לחשב מסלול הליכה כרגע. נסו שוב בעוד רגע.</p>');
+			})
+			.finally(() => {
+				if (selectionId === activeSelectionId) {
+					activeRouteController = null;
+				}
+			});
+	}
+
+	function handleLocationSelect(latRaw, lngRaw, label, options = {}) {
+		const lat = toFiniteNumber(latRaw);
+		const lng = toFiniteNumber(lngRaw);
+		if (lat === null || lng === null) return null;
+
+		activeSelectionId += 1;
+		const selectionId = activeSelectionId;
+
+		clearRouteLine();
+		abortActiveRouteRequest();
+		currentRouteStats = null;
+
 		if (currentPin) map.removeLayer(currentPin);
-		const routeInfoDiv = document.getElementById('route-info');
-		routeInfoDiv.innerHTML = '<div id="loading">מחשב...</div>';
 
 		map.flyTo([lat, lng], 16, { duration: 0.8 });
 		currentPin = L.marker([lat, lng], { icon: userIcon }).addTo(map).bindPopup(label).openPopup();
-		document.getElementById('clear-map-btn').classList.remove('hidden');
+		clearMapBtn.classList.remove('hidden');
 
-		if (stationsData.length === 0) return;
-		let closest = null; let minDist = Infinity;
-		stationsData.forEach(s => {
-			const d = map.distance([lat, lng], [s.lat, s.lon]);
-			if (d < minDist) { minDist = d; closest = s; }
-		});
-		if (closest) calculateRoute(lat, lng, closest);
+		currentSelectionLocation = { lat, lng, label, selectionId };
+
+		if (stationsData.length === 0) {
+			routeInfoDiv.innerHTML = '<p>טוען תחנות...</p>';
+			return selectionId;
+		}
+
+		routeCandidates = buildRouteCandidates(lat, lng, 7);
+		const preferredStationKey = options.preferredStationKey || selectedRouteStationKey;
+		const preferredStation = routeCandidates.find((station) => station.key === preferredStationKey);
+		const initialStation = preferredStation || routeCandidates[0];
+
+		selectedRouteStationKey = initialStation ? initialStation.key : '';
+		renderRoutePanel(label, routeCandidates, selectedRouteStationKey);
+
+		if (initialStation) {
+			calculateRoute(lat, lng, initialStation, selectionId);
+		}
+
+		return selectionId;
 	}
 
-	function calculateRoute(lat, lng, station) {
-		const name = station.name_he || station.name;
-		// Use routing.openstreetmap.de for consistency with Valhalla data
-		const url = `https://routing.openstreetmap.de/routed-foot/route/v1/foot/${lng},${lat};${station.lon},${station.lat}?overview=full&geometries=geojson`;
-		fetch(url).then(res => res.json()).then(data => {
-			if (data.routes && data.routes[0]) {
-				const route = data.routes[0];
-				const dist = Math.round(route.distance);
-
-				// Enforce consistency: 80 meters per minute (Human walking speed)
-				const minutes = Math.max(1, Math.round(dist / 80));
-				const isClose = minutes <= walkingMinutes;
-
-				document.getElementById('route-info').innerHTML = `
-					<h3>פרטי מסלול</h3>
-					<p><strong>יעד:</strong> ${name}</p>
-					<p><strong>זמן הליכה:</strong> <span style="font-size: 1.2rem; font-weight: bold;">${minutes} דק'</span></p>
-					<p><strong>מרחק:</strong> ${dist} מטרים</p>
-					<p style="color: ${isClose ? '#2a9d8f' : '#e63946'}; font-weight: 600; margin-top: 10px;">
-						${isClose ? `מצויין! בטווח ${walkingMinutes} דקות.` : `יותר מ-${walkingMinutes} דקות הליכה.`}
-					</p>
-				`;
-				if (currentRouteLine) map.removeLayer(currentRouteLine);
-				currentRouteLine = L.geoJSON(route.geometry, { style: { color: '#3b82f6', weight: 5, opacity: 0.8 } }).addTo(map);
-			}
-		});
-	}
-
-	// --- Neighborhoods ---
 	function findNeighborhoodLocally(lat, lng) {
 		if (!window.turf) return null;
 		const pt = turf.point([lng, lat]);
-		let best = null; let minArea = Infinity;
-		for (const [key, poly] of neighborhoodCache) {
+		let best = null;
+		let minArea = Infinity;
+
+		for (const poly of neighborhoodCache.values()) {
 			try {
 				if (turf.booleanPointInPolygon(pt, poly)) {
 					const area = turf.area(poly);
-					if (area < minArea) { minArea = area; best = poly; }
+					if (area < minArea) {
+						minArea = area;
+						best = poly;
+					}
 				}
-			} catch (e) { }
+			} catch (error) {
+				// Ignore malformed polygons
+			}
 		}
+
 		return best;
 	}
 
 	function drawNeighborhood(geojson) {
+		if (!geojson) return;
 		if (currentNeighborhoodLayer) map.removeLayer(currentNeighborhoodLayer);
 		currentNeighborhoodLayer = L.geoJSON(geojson, {
 			style: { color: '#ff9f1c', weight: 4, dashArray: '10, 10', fillColor: '#ff9f1c', fillOpacity: 0.1 }
 		}).addTo(map);
 	}
 
-	function formatAddress(data) {
-		const addr = data.address || {};
-		const street = addr.road || addr.pedestrian || "";
-		const number = addr.house_number || "";
-		const neighborhood = addr.neighbourhood || addr.suburb || addr.residential || addr.quarter || "";
-		const city = addr.city || addr.town || addr.village || "";
-
-		let streetPart = street;
-		if (number) streetPart += " " + number;
-
-		let components = [];
-		if (streetPart) components.push(streetPart);
-		if (neighborhood) components.push(neighborhood);
-		if (city) components.push(city);
-
-		if (components.length === 0) return data.display_name.split(',')[0];
-		return components.join(', ');
+	function updateClearSearchButton() {
+		if (!clearSearchBtn) return;
+		const hasValue = searchInput.value.trim().length > 0;
+		clearSearchBtn.classList.toggle('hidden', !hasValue);
 	}
 
+	function resetSearchState() {
+		renderedSearchItems = [];
+		highlightedSearchIndex = -1;
+
+		if (searchDebounceId) {
+			clearTimeout(searchDebounceId);
+			searchDebounceId = null;
+		}
+
+		if (activeSearchController) {
+			activeSearchController.abort();
+			activeSearchController = null;
+		}
+	}
+
+	function hideSearchResults() {
+		searchResults.innerHTML = '';
+		searchResults.classList.add('hidden');
+		searchInput.setAttribute('aria-expanded', 'false');
+		renderedSearchItems = [];
+		highlightedSearchIndex = -1;
+	}
+
+	function renderSearchStatus(message, isError = false) {
+		searchResults.innerHTML = '';
+		const li = document.createElement('li');
+		li.className = `search-status${isError ? ' search-status-error' : ''}`;
+		li.textContent = message;
+		searchResults.appendChild(li);
+		searchResults.classList.remove('hidden');
+		searchInput.setAttribute('aria-expanded', 'true');
+		renderedSearchItems = [];
+		highlightedSearchIndex = -1;
+	}
+
+	function updateHighlightedResult() {
+		const nodes = searchResults.querySelectorAll('.search-result-item');
+		nodes.forEach((node, index) => {
+			const isActive = index === highlightedSearchIndex;
+			node.classList.toggle('active', isActive);
+			node.setAttribute('aria-selected', isActive ? 'true' : 'false');
+		});
+	}
+
+	function selectSearchItem(item) {
+		if (!item) return;
+
+		hideSearchResults();
+		searchInput.value = item.label || '';
+		updateClearSearchButton();
+
+		if (item.geojson) drawNeighborhood(item.geojson);
+
+		const lat = toFiniteNumber(item.lat);
+		const lon = toFiniteNumber(item.lon);
+		if (lat !== null && lon !== null) {
+			handleLocationSelect(lat, lon, item.label || 'בחירה מהמפה');
+			return;
+		}
+
+		const center = getGeojsonCenter(item.geojson);
+		if (center) {
+			handleLocationSelect(center.lat, center.lon, item.label || 'בחירה מהמפה');
+		}
+	}
+
+	function renderSearchResults(items, { appendLoading = false, emptyMessage = '' } = {}) {
+		searchResults.innerHTML = '';
+		renderedSearchItems = items.slice(0, 10);
+		highlightedSearchIndex = -1;
+
+		renderedSearchItems.forEach((item) => {
+			const li = document.createElement('li');
+			li.className = 'search-result-item';
+			li.setAttribute('role', 'option');
+			li.setAttribute('aria-selected', 'false');
+
+			const typeLabel = item.typeLabel ? `<span class="search-result-type">${escapeHtml(item.typeLabel)}</span>` : '';
+			const secondaryLabel = item.secondaryLabel
+				? `<div class="search-result-secondary">${escapeHtml(item.secondaryLabel)}</div>`
+				: '';
+
+			li.innerHTML = `
+				<div class="search-result-main">${escapeHtml(item.label)}</div>
+				${secondaryLabel}
+				${typeLabel}
+			`;
+
+			li.addEventListener('click', () => selectSearchItem(item));
+			searchResults.appendChild(li);
+		});
+
+		if (renderedSearchItems.length === 0 && emptyMessage) {
+			const li = document.createElement('li');
+			li.className = 'search-status';
+			li.textContent = emptyMessage;
+			searchResults.appendChild(li);
+		}
+
+		if (appendLoading) {
+			const li = document.createElement('li');
+			li.className = 'search-status';
+			li.textContent = 'מחפש כתובות נוספות...';
+			searchResults.appendChild(li);
+		}
+
+		if (searchResults.children.length > 0) {
+			searchResults.classList.remove('hidden');
+			searchInput.setAttribute('aria-expanded', 'true');
+		} else {
+			hideSearchResults();
+		}
+	}
+
+	function buildLocalSearchMatches(query) {
+		const normalizedQuery = normalizeText(query);
+		const localMatches = [];
+		const dedupe = new Set();
+
+		for (const [name, poly] of neighborhoodCache.entries()) {
+			const normalizedName = normalizeText(name);
+			if (!normalizedName || !normalizedName.includes(normalizedQuery)) continue;
+
+			const key = `neighborhood:${normalizedName}`;
+			if (dedupe.has(key)) continue;
+			dedupe.add(key);
+
+			const center = getGeojsonCenter(poly);
+			localMatches.push({
+				label: name,
+				secondaryLabel: 'גבול שכונה מקומי',
+				lat: center ? center.lat : null,
+				lon: center ? center.lon : null,
+				geojson: poly,
+				type: 'neighborhood',
+				typeLabel: 'שכונה'
+			});
+		}
+
+		stationsData.forEach((station) => {
+			const displayName = getStationDisplayName(station);
+			const normalizedName = normalizeText(displayName);
+			if (!normalizedName || !normalizedName.includes(normalizedQuery)) return;
+
+			const key = `station:${normalizedName}`;
+			if (dedupe.has(key)) return;
+			dedupe.add(key);
+
+			localMatches.push({
+				label: displayName,
+				secondaryLabel: 'תחנת רכבת קלה',
+				lat: toFiniteNumber(station.lat),
+				lon: toFiniteNumber(station.lon),
+				geojson: null,
+				type: 'station',
+				typeLabel: 'תחנה'
+			});
+		});
+
+		return localMatches;
+	}
+
+	function fetchExternalSearchResults(query, localMatches, requestId) {
+		if (activeSearchController) activeSearchController.abort();
+		activeSearchController = new AbortController();
+
+		const params = new URLSearchParams({
+			q: query,
+			format: 'jsonv2',
+			countrycodes: 'il',
+			'accept-language': 'he,en',
+			limit: '12',
+			addressdetails: '1',
+			polygon_geojson: '1',
+			dedupe: '1',
+			viewbox: '34.70,32.15,34.95,31.93'
+		});
+
+		fetch(`https://nominatim.openstreetmap.org/search?${params.toString()}`, {
+			signal: activeSearchController.signal
+		})
+			.then((res) => {
+				if (!res.ok) throw new Error(`Search API failed: ${res.status}`);
+				return res.json();
+			})
+			.then((data) => {
+				if (requestId !== activeSearchRequestId) return;
+
+				const externalItems = Array.isArray(data)
+					? data.map((item) => {
+						const formatted = formatSearchAddress(item);
+						return {
+							label: formatted.label,
+							secondaryLabel: formatted.secondaryLabel,
+							lat: toFiniteNumber(item.lat),
+							lon: toFiniteNumber(item.lon),
+							geojson: item.geojson || null,
+							type: 'address',
+							typeLabel: 'כתובת'
+						};
+					}).filter((item) => Boolean(item.label))
+					: [];
+
+				const mergedMap = new Map();
+				[...localMatches, ...externalItems].forEach((item) => {
+					const key = getSearchItemKey(item);
+					if (!mergedMap.has(key)) mergedMap.set(key, item);
+				});
+
+				const normalizedQuery = normalizeText(query);
+				const mergedItems = Array.from(mergedMap.values())
+					.sort((a, b) => scoreSearchItem(b, normalizedQuery) - scoreSearchItem(a, normalizedQuery))
+					.slice(0, 10);
+
+				renderSearchResults(mergedItems, { emptyMessage: 'לא נמצאו תוצאות מתאימות.' });
+			})
+			.catch((error) => {
+				if (error.name === 'AbortError') return;
+				console.error('Search error:', error);
+				if (requestId !== activeSearchRequestId) return;
+				renderSearchResults(localMatches, {
+					emptyMessage: 'לא הצלחנו לטעון כתובות כרגע. נסו שוב.'
+				});
+			})
+			.finally(() => {
+				if (requestId === activeSearchRequestId) activeSearchController = null;
+			});
+	}
+
+	function searchLocations(query) {
+		const normalizedQuery = normalizeText(query);
+		if (normalizedQuery.length < 2) {
+			resetSearchState();
+			hideSearchResults();
+			return;
+		}
+
+		const localMatches = buildLocalSearchMatches(query)
+			.sort((a, b) => scoreSearchItem(b, normalizedQuery) - scoreSearchItem(a, normalizedQuery))
+			.slice(0, 5);
+
+		if (localMatches.length > 0) {
+			renderSearchResults(localMatches, { appendLoading: true });
+		} else {
+			renderSearchStatus('מחפש כתובות...');
+		}
+
+		activeSearchRequestId += 1;
+		const requestId = activeSearchRequestId;
+
+		if (searchDebounceId) clearTimeout(searchDebounceId);
+		searchDebounceId = setTimeout(() => {
+			fetchExternalSearchResults(query, localMatches, requestId);
+		}, 300);
+	}
+
+	function clearMap() {
+		activeSelectionId += 1;
+		abortActiveRouteRequest();
+
+		if (currentPin) map.removeLayer(currentPin);
+		if (currentNeighborhoodLayer) map.removeLayer(currentNeighborhoodLayer);
+		clearRouteLine();
+
+		currentPin = null;
+		currentNeighborhoodLayer = null;
+		currentSelectionLocation = null;
+		routeCandidates = [];
+		selectedRouteStationKey = '';
+		currentRouteStats = null;
+
+		clearMapBtn.classList.add('hidden');
+		routeInfoDiv.innerHTML = '';
+		searchInput.value = '';
+		updateClearSearchButton();
+		resetSearchState();
+		hideSearchResults();
+	}
+
+	// --- Data Loading ---
+	fetch('stations.json?v=1')
+		.then((res) => {
+			if (!res.ok) throw new Error(`Failed to load stations (${res.status})`);
+			return res.json();
+		})
+		.then((data) => {
+			stationsData = data;
+			const stationGroup = L.featureGroup().addTo(map);
+			data.forEach((station) => {
+				const name = getStationDisplayName(station);
+				const marker = L.marker([station.lat, station.lon], { icon: stationIcon }).addTo(stationGroup);
+				marker.bindTooltip(name, {
+					permanent: true,
+					direction: 'bottom',
+					className: 'station-label',
+					offset: [0, 5]
+				});
+				marker.bindPopup(`<div class="station-popup-title">${escapeHtml(name)}</div>`, { className: 'custom-popup' });
+				marker.on('click', () => map.setView([station.lat, station.lon], 16));
+			});
+
+			if (Object.keys(isochroneData).length > 0) {
+				updateIsochrones(walkingMinutes);
+			}
+		})
+		.catch((error) => {
+			console.error('Failed to load stations:', error);
+		});
+
+	fetch('station_isochrones.json?v=1')
+		.then((res) => {
+			if (!res.ok) throw new Error(`Failed to load isochrones (${res.status})`);
+			return res.json();
+		})
+		.then((data) => {
+			isochroneData = data;
+			if (stationsData.length > 0) {
+				updateIsochrones(walkingMinutes);
+			}
+		})
+		.catch((error) => {
+			console.error('Failed to load station isochrones:', error);
+		});
+
+	fetch('neighborhoods.json?v=1')
+		.then((res) => {
+			if (!res.ok) throw new Error(`Failed to load neighborhoods (${res.status})`);
+			return res.json();
+		})
+		.then((data) => {
+			Object.keys(data).forEach((key) => neighborhoodCache.set(key, data[key]));
+		})
+		.catch((error) => {
+			console.error('Failed to load neighborhoods:', error);
+		});
+
 	// --- Event Listeners ---
-	const slider = document.getElementById('radius-slider');
-	const radiusValue = document.getElementById('radius-value');
-	slider.addEventListener('input', (e) => {
-		walkingMinutes = parseInt(e.target.value);
-		radiusValue.textContent = walkingMinutes;
+	slider.addEventListener('input', (event) => {
+		walkingMinutes = parseInt(event.target.value, 10) || walkingMinutes;
+		radiusValue.textContent = String(walkingMinutes);
 		updateIsochrones(walkingMinutes);
-		// Update existing route info if pin exists
-		if (currentPin) {
-			const latlng = currentPin.getLatLng();
-			handleLocationSelect(latlng.lat, latlng.lng, currentPin.getPopup().getContent());
+
+		if (currentRouteStats) {
+			renderRouteDetails(currentRouteStats.stationName, currentRouteStats.distanceMeters);
 		}
 	});
 
-	map.on('click', (e) => {
-		const { lat, lng } = e.latlng;
-		if (currentNeighborhoodLayer) map.removeLayer(currentNeighborhoodLayer);
-		const local = findNeighborhoodLocally(lat, lng);
-		if (local) drawNeighborhood(local);
+	routeInfoDiv.addEventListener('click', (event) => {
+		const button = event.target.closest('.route-station-btn');
+		if (!button || !currentSelectionLocation) return;
 
-		handleLocationSelect(lat, lng, "מאתר כתובת...");
-		fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=he`)
-			.then(res => res.json())
-			.then(data => {
+		const index = parseInt(button.dataset.routeIndex || '', 10);
+		if (!Number.isFinite(index)) return;
+
+		const station = routeCandidates[index];
+		if (!station) return;
+
+		calculateRoute(
+			currentSelectionLocation.lat,
+			currentSelectionLocation.lng,
+			station,
+			currentSelectionLocation.selectionId
+		);
+	});
+
+	map.on('click', (event) => {
+		const { lat, lng } = event.latlng;
+
+		if (currentNeighborhoodLayer) map.removeLayer(currentNeighborhoodLayer);
+
+		const localNeighborhood = findNeighborhoodLocally(lat, lng);
+		if (localNeighborhood) drawNeighborhood(localNeighborhood);
+
+		const selectionId = handleLocationSelect(lat, lng, 'מאתר כתובת...');
+		if (!selectionId) return;
+
+		fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lng}&accept-language=he,en`)
+			.then((res) => {
+				if (!res.ok) throw new Error(`Reverse geocode failed: ${res.status}`);
+				return res.json();
+			})
+			.then((data) => {
+				if (selectionId !== activeSelectionId || !currentPin) return;
+
 				const label = formatAddress(data);
 				currentPin.setPopupContent(label).openPopup();
 
+				if (currentSelectionLocation && currentSelectionLocation.selectionId === selectionId) {
+					currentSelectionLocation.label = label;
+					updateRouteOriginLabel(label);
+				}
+
 				const addr = data.address || {};
 				const hood = addr.neighbourhood || addr.suburb || addr.residential || addr.quarter;
-				if (!local && hood) {
-					// Minimal boundary fetch if local miss
-					fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(hood + ', תל אביב')}&format=json&polygon_geojson=1&limit=1`)
-						.then(r => r.json()).then(d => { if (d[0] && d[0].geojson) drawNeighborhood(d[0].geojson); });
+				if (!localNeighborhood && hood) {
+					fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(`${hood}, תל אביב`)}&format=jsonv2&polygon_geojson=1&limit=1`)
+						.then((r) => r.json())
+						.then((items) => {
+							if (selectionId !== activeSelectionId) return;
+							if (items[0] && items[0].geojson) drawNeighborhood(items[0].geojson);
+						})
+						.catch(() => { });
+				}
+			})
+			.catch((error) => {
+				console.error('Reverse geocoding error:', error);
+				if (selectionId === activeSelectionId && currentPin) {
+					currentPin.setPopupContent(`${lat.toFixed(5)}, ${lng.toFixed(5)}`).openPopup();
 				}
 			});
 	});
 
-	// --- Search ---
-	const searchInput = document.getElementById('search-input');
-	const results = document.getElementById('search-results');
-
-	searchInput.addEventListener('input', (e) => {
-		const q = e.target.value.trim();
-		if (q.length < 3) { results.innerHTML = ''; results.classList.add('hidden'); return; }
-
-		// 1. Quick Local Search (Instant)
-		const localMatches = [];
-		const normalizedQ = q.toLowerCase();
-
-		// Check neighborhoods
-		for (const [name, poly] of neighborhoodCache) {
-			if (name.toLowerCase().includes(normalizedQ)) {
-				localMatches.push({ label: name, lat: null, lon: null, geojson: poly, type: 'neighborhood' });
-			}
-		}
-
-		// Check stations
-		stationsData.forEach(s => {
-			const name = s.name_he || s.name;
-			if (name.toLowerCase().includes(normalizedQ)) {
-				localMatches.push({ label: name, lat: s.lat, lon: s.lon, type: 'station' });
-			}
-		});
-
-		// Render internal matches immediately
-		const renderResults = (items, isExternal = false) => {
-			if (!isExternal) results.innerHTML = '';
-			items.forEach(item => {
-				const li = document.createElement('li');
-				li.className = 'search-result-item';
-				li.textContent = item.label;
-				li.onclick = () => {
-					results.classList.add('hidden');
-					searchInput.value = item.label;
-					if (item.geojson) drawNeighborhood(item.geojson);
-					if (item.lat) handleLocationSelect(item.lat, item.lon, item.label);
-					else if (item.geojson && window.turf) {
-						const center = turf.centerOfMass(item.geojson);
-						handleLocationSelect(center.geometry.coordinates[1], center.geometry.coordinates[0], item.label);
-					}
-				};
-				results.appendChild(li);
-			});
-			if (items.length > 0) results.classList.remove('hidden');
-		};
-
-		renderResults(localMatches.slice(0, 3));
-
-		// 2. Optimized External Search (Debounced)
-		clearTimeout(window._searchT);
-		window._searchT = setTimeout(() => {
-			// Center on Tel Aviv, Israel
-			const viewbox = "34.74,32.16,34.85,32.03";
-			const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&countrycodes=il&accept-language=he&limit=5&addressdetails=1&polygon_geojson=1&viewbox=${viewbox}&bounded=1`;
-
-			fetch(url).then(r => r.json()).then(data => {
-				if (!data.length) return;
-				const externalItems = data.map(item => ({
-					label: formatAddress(item),
-					lat: item.lat,
-					lon: item.lon,
-					geojson: item.geojson,
-					type: 'address'
-				}));
-
-				// Append external results to local ones
-				renderResults(externalItems, true);
-			});
-		}, 150); // Faster debounce
+	searchInput.addEventListener('input', (event) => {
+		const query = event.target.value.trim();
+		updateClearSearchButton();
+		searchLocations(query);
 	});
 
-	function clearMap() {
-		if (currentPin) map.removeLayer(currentPin);
-		if (currentRouteLine) map.removeLayer(currentRouteLine);
-		if (currentNeighborhoodLayer) map.removeLayer(currentNeighborhoodLayer);
-		currentPin = currentRouteLine = currentNeighborhoodLayer = null;
-		document.getElementById('clear-map-btn').classList.add('hidden');
-		document.getElementById('route-info').innerHTML = '';
-		searchInput.value = '';
+	searchInput.addEventListener('keydown', (event) => {
+		if (searchResults.classList.contains('hidden') || renderedSearchItems.length === 0) {
+			if (event.key === 'Escape') hideSearchResults();
+			return;
+		}
+
+		if (event.key === 'ArrowDown') {
+			event.preventDefault();
+			highlightedSearchIndex = (highlightedSearchIndex + 1) % renderedSearchItems.length;
+			updateHighlightedResult();
+			return;
+		}
+
+		if (event.key === 'ArrowUp') {
+			event.preventDefault();
+			highlightedSearchIndex = highlightedSearchIndex <= 0
+				? renderedSearchItems.length - 1
+				: highlightedSearchIndex - 1;
+			updateHighlightedResult();
+			return;
+		}
+
+		if (event.key === 'Enter') {
+			event.preventDefault();
+			const picked = highlightedSearchIndex >= 0
+				? renderedSearchItems[highlightedSearchIndex]
+				: renderedSearchItems[0];
+			selectSearchItem(picked);
+			return;
+		}
+
+		if (event.key === 'Escape') {
+			event.preventDefault();
+			hideSearchResults();
+		}
+	});
+
+	searchInput.addEventListener('focus', () => {
+		const query = searchInput.value.trim();
+		if (query.length >= 2 && searchResults.classList.contains('hidden')) {
+			searchLocations(query);
+		}
+	});
+
+	document.addEventListener('click', (event) => {
+		if (!event.target.closest('.search-container')) {
+			hideSearchResults();
+		}
+	});
+
+	if (clearSearchBtn) {
+		clearSearchBtn.addEventListener('click', (event) => {
+			event.preventDefault();
+			searchInput.value = '';
+			updateClearSearchButton();
+			resetSearchState();
+			hideSearchResults();
+			searchInput.focus();
+		});
 	}
 
-	document.getElementById('clear-map-btn').onclick = clearMap;
+	clearMapBtn.addEventListener('click', clearMap);
 
-	// --- Geolocation ---
-	const locateBtn = document.getElementById('locate-me-btn');
 	if (locateBtn) {
-		locateBtn.onclick = () => {
+		locateBtn.addEventListener('click', () => {
 			if (!navigator.geolocation) {
 				alert('דפדפן זה אינו תומך בזיהוי מיקום');
 				return;
 			}
+
 			locateBtn.classList.add('loading');
 			navigator.geolocation.getCurrentPosition(
 				(position) => {
 					locateBtn.classList.remove('loading');
 					const { latitude, longitude } = position.coords;
 					if (currentNeighborhoodLayer) map.removeLayer(currentNeighborhoodLayer);
-					const local = findNeighborhoodLocally(latitude, longitude);
-					if (local) drawNeighborhood(local);
-					handleLocationSelect(latitude, longitude, "המיקום הנוכחי שלך");
+					const localNeighborhood = findNeighborhoodLocally(latitude, longitude);
+					if (localNeighborhood) drawNeighborhood(localNeighborhood);
+					handleLocationSelect(latitude, longitude, 'המיקום הנוכחי שלך');
 				},
 				(error) => {
 					locateBtn.classList.remove('loading');
@@ -325,7 +945,7 @@ document.addEventListener('DOMContentLoaded', () => {
 					alert('לא ניתן היה למצוא את מיקומך');
 				}
 			);
-		};
+		});
 	}
 
 	// --- Draggable Mobile Panel ---
@@ -337,36 +957,34 @@ document.addEventListener('DOMContentLoaded', () => {
 	let startHeight = 0;
 
 	if (toggleBtn && infoPanel) {
-		// Prevent map from receiving clicks/scrolls when interacting with the panel
 		L.DomEvent.disableClickPropagation(infoPanel);
 		L.DomEvent.disableScrollPropagation(infoPanel);
 
-		// Broadly block touchstart from bubbling to the map's drag handler
-		infoPanel.addEventListener('touchstart', (e) => e.stopPropagation(), { passive: true });
+		infoPanel.addEventListener('touchstart', (event) => event.stopPropagation(), { passive: true });
 
-		toggleBtn.onclick = (e) => {
-			e.preventDefault();
+		toggleBtn.addEventListener('click', (event) => {
+			event.preventDefault();
 			const isCollapsed = infoPanel.classList.toggle('collapsed');
 			toggleBtn.textContent = isCollapsed ? 'הצג פרטים' : 'הסתר פרטים';
 			infoPanel.style.maxHeight = isCollapsed ? '70px' : '45vh';
 			infoPanel.style.height = isCollapsed ? '70px' : 'auto';
-		};
+		});
 	}
 
 	if (header && infoPanel) {
-		const touchStart = (e) => {
-			if (e.target === toggleBtn) return;
+		const touchStart = (event) => {
+			if (event.target === toggleBtn) return;
 			isDragging = true;
-			startY = e.touches[0].clientY;
+			startY = event.touches[0].clientY;
 			startHeight = infoPanel.offsetHeight;
 			infoPanel.style.transition = 'none';
 		};
 
-		const touchMove = (e) => {
+		const touchMove = (event) => {
 			if (!isDragging) return;
-			if (e.cancelable) e.preventDefault();
+			if (event.cancelable) event.preventDefault();
 
-			const currentY = e.touches[0].clientY;
+			const currentY = event.touches[0].clientY;
 			const deltaY = startY - currentY;
 			const newHeight = startHeight + deltaY;
 			const maxHeight = window.innerHeight * 0.95;
@@ -375,11 +993,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			if (newHeight >= minHeight && newHeight <= maxHeight) {
 				infoPanel.style.height = `${newHeight}px`;
 				infoPanel.style.maxHeight = `${newHeight}px`;
-				if (newHeight < 150) {
-					if (toggleBtn) toggleBtn.textContent = 'הצג פרטים';
-				} else {
-					if (toggleBtn) toggleBtn.textContent = 'הסתר פרטים';
-				}
+				if (toggleBtn) toggleBtn.textContent = newHeight < 150 ? 'הצג פרטים' : 'הסתר פרטים';
 			}
 		};
 
@@ -387,6 +1001,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			if (!isDragging) return;
 			isDragging = false;
 			infoPanel.style.transition = 'all 0.3s ease';
+
 			const height = infoPanel.offsetHeight;
 			if (height < 120) {
 				infoPanel.classList.add('collapsed');
@@ -395,8 +1010,6 @@ document.addEventListener('DOMContentLoaded', () => {
 				if (toggleBtn) toggleBtn.textContent = 'הצג פרטים';
 			} else {
 				infoPanel.classList.remove('collapsed');
-				// Stay at user dragged height. 
-				// We keep height specifically set during the drag's end to avoid "auto" jumping
 				infoPanel.style.maxHeight = `${height}px`;
 				infoPanel.style.height = `${height}px`;
 				if (toggleBtn) toggleBtn.textContent = 'הסתר פרטים';
@@ -407,4 +1020,6 @@ document.addEventListener('DOMContentLoaded', () => {
 		window.addEventListener('touchmove', touchMove, { passive: false });
 		window.addEventListener('touchend', touchEnd, { passive: true });
 	}
+
+	updateClearSearchButton();
 });
