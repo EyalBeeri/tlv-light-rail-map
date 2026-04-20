@@ -28,13 +28,19 @@ document.addEventListener('DOMContentLoaded', () => {
 	const clearSearchBtn = document.getElementById('clear-search-btn');
 	const searchResults = document.getElementById('search-results');
 	const locateBtn = document.getElementById('locate-me-btn');
+	const plannedGreenToggle = document.getElementById('toggle-planned-green');
+	const plannedPurpleToggle = document.getElementById('toggle-planned-purple');
 
 	searchInput.setAttribute('aria-expanded', 'false');
 
 	// --- State ---
 	let stationsData = [];
+	let plannedStationsData = [];
 	let isochroneData = {};
 	let walkingMinutes = parseInt(slider.value, 10) || 5;
+	const plannedStationsByLine = { green: [], purple: [] };
+	const plannedLayerByLine = { green: L.layerGroup(), purple: L.layerGroup() };
+	const activePlannedLines = { green: false, purple: false };
 
 	let currentIsochroneLayerGroup = L.layerGroup().addTo(map);
 	let currentNeighborhoodLayer = null;
@@ -67,6 +73,22 @@ document.addEventListener('DOMContentLoaded', () => {
 		iconAnchor: [12, 12]
 	});
 
+	const plannedStationSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="16" rx="2"/><path d="M4 11h16"/><path d="M12 3v8"/><path d="m8 19-2 3"/><path d="m18 22-2-3"/><path d="M8 15h0"/><path d="M16 15h0"/></svg>`;
+
+	const plannedGreenIcon = L.divIcon({
+		className: 'station-icon planned-station-icon planned-station-green',
+		html: plannedStationSvg,
+		iconSize: [24, 24],
+		iconAnchor: [12, 12]
+	});
+
+	const plannedPurpleIcon = L.divIcon({
+		className: 'station-icon planned-station-icon planned-station-purple',
+		html: plannedStationSvg,
+		iconSize: [24, 24],
+		iconAnchor: [12, 12]
+	});
+
 	const userIcon = L.divIcon({
 		className: 'user-icon',
 		html: `<div class="user-icon-inner"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg></div>`,
@@ -75,8 +97,21 @@ document.addEventListener('DOMContentLoaded', () => {
 		popupAnchor: [0, -36]
 	});
 
+	function getPlannedLineLabel(line) {
+		if (line === 'green') return 'ירוק';
+		if (line === 'purple') return 'סגול';
+		return 'עתידי';
+	}
+
+	function getPlannedIcon(line) {
+		return line === 'purple' ? plannedPurpleIcon : plannedGreenIcon;
+	}
+
 	function getStationDisplayName(station) {
 		const baseName = station.name_he || station.name || 'תחנה';
+		if (station.isPlanned) {
+			return `${baseName} (קו ${getPlannedLineLabel(station.line)} מתוכנן)`;
+		}
 		if (baseName === 'שלמה') return 'שלמה (סלמה)';
 		return baseName;
 	}
@@ -86,7 +121,11 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 
 	function getStationKey(station) {
-		return station.full_name || station.name_he || station.name || '';
+		const baseKey = station.full_name || station.name_he || station.name || '';
+		if (station.isPlanned) {
+			return `${station.line || 'planned'}::${baseKey}`;
+		}
+		return baseKey;
 	}
 
 	function escapeHtml(value) {
@@ -198,6 +237,28 @@ document.addEventListener('DOMContentLoaded', () => {
 		return score;
 	}
 
+	function getActivePlannedStations() {
+		const active = [];
+		if (activePlannedLines.green) active.push(...plannedStationsByLine.green);
+		if (activePlannedLines.purple) active.push(...plannedStationsByLine.purple);
+		return active;
+	}
+
+	function getSearchableStations() {
+		return [...stationsData, ...getActivePlannedStations()];
+	}
+
+	function applyPlannedLayersVisibility() {
+		Object.keys(plannedLayerByLine).forEach((line) => {
+			const shouldShow = Boolean(activePlannedLines[line]);
+			const layer = plannedLayerByLine[line];
+			const isShowing = map.hasLayer(layer);
+
+			if (shouldShow && !isShowing) layer.addTo(map);
+			if (!shouldShow && isShowing) map.removeLayer(layer);
+		});
+	}
+
 	function clearRouteLine() {
 		if (currentRouteLine) {
 			map.removeLayer(currentRouteLine);
@@ -247,7 +308,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 
 	function buildRouteCandidates(lat, lng, limit = 6) {
-		return stationsData
+		const sorted = getSearchableStations()
 			.map((station) => {
 				const stationLat = toFiniteNumber(station.lat);
 				const stationLon = toFiniteNumber(station.lon);
@@ -265,8 +326,20 @@ document.addEventListener('DOMContentLoaded', () => {
 				};
 			})
 			.filter((station) => station.lat !== null && station.lon !== null)
-			.sort((a, b) => a.directDistance - b.directDistance)
-			.slice(0, limit);
+			.sort((a, b) => a.directDistance - b.directDistance);
+
+		const deduped = [];
+		const seenNames = new Set();
+		for (const station of sorted) {
+			const dedupeName = normalizeText(station.name_he || station.name || station.displayName || '');
+			if (dedupeName && seenNames.has(dedupeName)) continue;
+			if (dedupeName) seenNames.add(dedupeName);
+
+			deduped.push(station);
+			if (deduped.length >= limit) break;
+		}
+
+		return deduped;
 	}
 
 	function renderRoutePanel(originLabel, candidates, selectedStationKey) {
@@ -296,6 +369,28 @@ document.addEventListener('DOMContentLoaded', () => {
 			<div class="route-stations-list">${stationsHtml}</div>
 			<div id="route-details"><div id="loading">מחשב מסלול...</div></div>
 		`;
+	}
+
+	function refreshRouteCandidatesForCurrentSelection() {
+		if (!currentSelectionLocation) return;
+
+		routeCandidates = buildRouteCandidates(currentSelectionLocation.lat, currentSelectionLocation.lng, 7);
+		const preferredStation = routeCandidates.find((station) => station.key === selectedRouteStationKey) || routeCandidates[0];
+
+		selectedRouteStationKey = preferredStation ? preferredStation.key : '';
+		renderRoutePanel(currentSelectionLocation.label, routeCandidates, selectedRouteStationKey);
+
+		if (preferredStation) {
+			calculateRoute(
+				currentSelectionLocation.lat,
+				currentSelectionLocation.lng,
+				preferredStation,
+				currentSelectionLocation.selectionId
+			);
+		} else {
+			clearRouteLine();
+			setRouteDetailsHtml('<p>אין תחנות זמינות כרגע.</p>');
+		}
 	}
 
 	function updateIsochrones(minutes) {
@@ -580,7 +675,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			});
 		}
 
-		stationsData.forEach((station) => {
+		getSearchableStations().forEach((station) => {
 			const displayName = getStationDisplayName(station);
 			const normalizedName = normalizeText(displayName);
 			if (!normalizedName || !normalizedName.includes(normalizedQuery)) return;
@@ -589,14 +684,18 @@ document.addEventListener('DOMContentLoaded', () => {
 			if (dedupe.has(key)) return;
 			dedupe.add(key);
 
+			const secondaryLabel = station.isPlanned
+				? `תחנה מתוכננת - קו ${getPlannedLineLabel(station.line)}`
+				: 'תחנת רכבת קלה';
+
 			localMatches.push({
 				label: displayName,
-				secondaryLabel: 'תחנת רכבת קלה',
+				secondaryLabel,
 				lat: toFiniteNumber(station.lat),
 				lon: toFiniteNumber(station.lon),
 				geojson: null,
 				type: 'station',
-				typeLabel: 'תחנה'
+				typeLabel: station.isPlanned ? 'תחנה עתידית' : 'תחנה'
 			});
 		});
 
@@ -639,7 +738,7 @@ document.addEventListener('DOMContentLoaded', () => {
 							lon: toFiniteNumber(item.lon),
 							geojson: item.geojson || null,
 							type: 'address',
-							typeLabel: 'כתובת'
+							typeLabel: null
 						};
 					}).filter((item) => Boolean(item.label))
 					: [];
@@ -775,6 +874,68 @@ document.addEventListener('DOMContentLoaded', () => {
 		})
 		.catch((error) => {
 			console.error('Failed to load neighborhoods:', error);
+		});
+
+	fetch('planned_stations.json?v=1')
+		.then((res) => {
+			if (!res.ok) throw new Error(`Failed to load planned stations (${res.status})`);
+			return res.json();
+		})
+		.then((data) => {
+			plannedStationsData = Array.isArray(data) ? data : [];
+			plannedStationsByLine.green = [];
+			plannedStationsByLine.purple = [];
+			plannedLayerByLine.green.clearLayers();
+			plannedLayerByLine.purple.clearLayers();
+
+			plannedStationsData.forEach((stationRaw) => {
+				const line = stationRaw.line === 'purple' ? 'purple' : stationRaw.line === 'green' ? 'green' : '';
+				if (!line) return;
+
+				const lat = toFiniteNumber(stationRaw.lat);
+				const lon = toFiniteNumber(stationRaw.lon);
+				if (lat === null || lon === null) return;
+
+				const station = {
+					...stationRaw,
+					lat,
+					lon,
+					isPlanned: true,
+					name: stationRaw.name_he || stationRaw.name || 'תחנה מתוכננת'
+				};
+
+				plannedStationsByLine[line].push(station);
+
+				const marker = L.marker([lat, lon], { icon: getPlannedIcon(line) });
+				marker.bindTooltip(station.name_he || station.name || 'תחנה מתוכננת', {
+					permanent: false,
+					direction: 'bottom',
+					className: 'station-label planned-station-label',
+					offset: [0, 6]
+				});
+
+				marker.bindPopup(
+					`<div class="station-popup-title">${escapeHtml(station.name_he || station.name || 'תחנה מתוכננת')}</div>` +
+					`<div class="station-popup-detail">קו ${escapeHtml(getPlannedLineLabel(line))} • ${escapeHtml(station.status || 'מתוכנן')}</div>`,
+					{ className: 'custom-popup' }
+				);
+
+				marker.addTo(plannedLayerByLine[line]);
+			});
+
+			if (plannedGreenToggle) {
+				plannedGreenToggle.disabled = plannedStationsByLine.green.length === 0;
+			}
+			if (plannedPurpleToggle) {
+				plannedPurpleToggle.disabled = plannedStationsByLine.purple.length === 0;
+			}
+
+			applyPlannedLayersVisibility();
+		})
+		.catch((error) => {
+			console.error('Failed to load planned stations:', error);
+			if (plannedGreenToggle) plannedGreenToggle.disabled = true;
+			if (plannedPurpleToggle) plannedPurpleToggle.disabled = true;
 		});
 
 	// --- Event Listeners ---
@@ -920,6 +1081,30 @@ document.addEventListener('DOMContentLoaded', () => {
 		});
 	}
 
+	if (plannedGreenToggle) {
+		activePlannedLines.green = Boolean(plannedGreenToggle.checked);
+		plannedGreenToggle.addEventListener('change', () => {
+			activePlannedLines.green = Boolean(plannedGreenToggle.checked);
+			applyPlannedLayersVisibility();
+			refreshRouteCandidatesForCurrentSelection();
+
+			const query = searchInput.value.trim();
+			if (query.length >= 2) searchLocations(query);
+		});
+	}
+
+	if (plannedPurpleToggle) {
+		activePlannedLines.purple = Boolean(plannedPurpleToggle.checked);
+		plannedPurpleToggle.addEventListener('change', () => {
+			activePlannedLines.purple = Boolean(plannedPurpleToggle.checked);
+			applyPlannedLayersVisibility();
+			refreshRouteCandidatesForCurrentSelection();
+
+			const query = searchInput.value.trim();
+			if (query.length >= 2) searchLocations(query);
+		});
+	}
+
 	clearMapBtn.addEventListener('click', clearMap);
 
 	if (locateBtn) {
@@ -1021,5 +1206,6 @@ document.addEventListener('DOMContentLoaded', () => {
 		window.addEventListener('touchend', touchEnd, { passive: true });
 	}
 
+	applyPlannedLayersVisibility();
 	updateClearSearchButton();
 });

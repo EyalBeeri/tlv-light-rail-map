@@ -84,6 +84,41 @@ p {
 	border-bottom: 1px solid #eee;
 }
 
+.planned-toggle-group {
+	margin-bottom: 14px;
+	padding-bottom: 14px;
+	border-bottom: 1px solid #eee;
+	display: grid;
+	gap: 8px;
+}
+
+.planned-toggle-title {
+	margin: 0;
+	font-size: 0.88rem;
+	font-weight: 600;
+	color: #334155;
+}
+
+.planned-toggle-item {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 0.9rem;
+	color: #1f2937;
+	cursor: pointer;
+	user-select: none;
+}
+
+.planned-toggle-item input[type="checkbox"] {
+	width: 16px;
+	height: 16px;
+	cursor: pointer;
+}
+
+.planned-toggle-item input[type="checkbox"]:disabled {
+	cursor: not-allowed;
+}
+
 .slider-container label {
 	display: block;
 	margin-bottom: 8px;
@@ -411,6 +446,25 @@ p {
 	justify-content: center;
 	align-items: center;
 	color: white;
+}
+
+.planned-station-icon {
+	border-style: dashed;
+	opacity: 0.95;
+}
+
+.planned-station-green {
+	background-color: #16a34a;
+}
+
+.planned-station-purple {
+	background-color: #7e22ce;
+}
+
+.planned-station-label {
+	color: #1f2937;
+	font-size: 0.8rem;
+	font-weight: 500;
 }
 
 /* Remove the old dot */

@@ -1,0 +1,1082 @@
+[
+  {
+    "name_he": "אבא אבן",
+    "line": "green",
+    "city_he": "הרצליה",
+    "status": "planned",
+    "source": "Interpolated prefix",
+    "confidence": "low",
+    "lat": 32.1596916,
+    "lon": 34.8168999
+  },
+  {
+    "name_he": "החושלים",
+    "line": "green",
+    "city_he": "הרצליה",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.1586554,
+    "lon": 34.8066626
+  },
+  {
+    "name_he": "אלטנוילנד",
+    "line": "green",
+    "city_he": "הרצליה",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.1576192,
+    "lon": 34.7964253
+  },
+  {
+    "name_he": "חוף התכלת צפון",
+    "line": "green",
+    "city_he": "הרצליה",
+    "status": "planned",
+    "source": "Interpolated suffix",
+    "confidence": "low",
+    "lat": 32.156583,
+    "lon": 34.786188
+  },
+  {
+    "name_he": "חוף התכלת דרום",
+    "line": "green",
+    "city_he": "הרצליה",
+    "status": "planned",
+    "source": "Interpolated suffix",
+    "confidence": "low",
+    "lat": 32.1555468,
+    "lon": 34.7759507
+  },
+  {
+    "name_he": "יוניצ'מן",
+    "line": "green",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.1408842,
+    "lon": 34.8012459
+  },
+  {
+    "name_he": "מרים ילן שטקליס",
+    "line": "green",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "Interpolated between known stations",
+    "confidence": "low",
+    "lat": 32.1395296,
+    "lon": 34.8001293
+  },
+  {
+    "name_he": "מרים בן פורת",
+    "line": "green",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "Interpolated between known stations",
+    "confidence": "low",
+    "lat": 32.1381751,
+    "lon": 34.7990127
+  },
+  {
+    "name_he": "שושנה פרסיץ",
+    "line": "green",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.1368205,
+    "lon": 34.7978961
+  },
+  {
+    "name_he": "אזורי חן",
+    "line": "green",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.129981,
+    "lon": 34.7934245
+  },
+  {
+    "name_he": "פרופס",
+    "line": "green",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "Interpolated between known stations",
+    "confidence": "low",
+    "lat": 32.1223935,
+    "lon": 34.7903593
+  },
+  {
+    "name_he": "נופי ים",
+    "line": "green",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.114806,
+    "lon": 34.7872941
+  },
+  {
+    "name_he": "איינשטיין",
+    "line": "green",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "Interpolated between known stations",
+    "confidence": "low",
+    "lat": 32.1138191,
+    "lon": 34.7900166
+  },
+  {
+    "name_he": "לוי אשכול",
+    "line": "green",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "Interpolated between known stations",
+    "confidence": "low",
+    "lat": 32.1128323,
+    "lon": 34.7927392
+  },
+  {
+    "name_he": "נמיר",
+    "line": "green",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "Interpolated between known stations",
+    "confidence": "low",
+    "lat": 32.1118455,
+    "lon": 34.7954618
+  },
+  {
+    "name_he": "ברודצקי",
+    "line": "green",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.1108586,
+    "lon": 34.7981843
+  },
+  {
+    "name_he": "אוניברסיטת תל אביב",
+    "line": "green",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.11344,
+    "lon": 34.803686
+  },
+  {
+    "name_he": "ברושים",
+    "line": "green",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "Interpolated between known stations",
+    "confidence": "low",
+    "lat": 32.1089877,
+    "lon": 34.8059714
+  },
+  {
+    "name_he": "הירידים",
+    "line": "green",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "Interpolated between known stations",
+    "confidence": "low",
+    "lat": 32.1045354,
+    "lon": 34.8082569
+  },
+  {
+    "name_he": "גני יהושע",
+    "line": "green",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.1000831,
+    "lon": 34.8105423
+  },
+  {
+    "name_he": "הדר יוסף",
+    "line": "green",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.1082546,
+    "lon": 34.8236424
+  },
+  {
+    "name_he": "גשר פנחס רוזן",
+    "line": "green",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "Interpolated between known stations",
+    "confidence": "low",
+    "lat": 32.1087918,
+    "lon": 34.8319786
+  },
+  {
+    "name_he": "הברזל",
+    "line": "green",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.1093289,
+    "lon": 34.8403148
+  },
+  {
+    "name_he": "הנחושת",
+    "line": "green",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "Interpolated between known stations",
+    "confidence": "low",
+    "lat": 32.1254106,
+    "lon": 34.8396283
+  },
+  {
+    "name_he": "דבורה הנביאה",
+    "line": "green",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.1414923,
+    "lon": 34.8389418
+  },
+  {
+    "name_he": "נווה שרת",
+    "line": "green",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.1186515,
+    "lon": 34.8404085
+  },
+  {
+    "name_he": "זהרה לביטוב",
+    "line": "green",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.107825,
+    "lon": 34.7853605
+  },
+  {
+    "name_he": "רדינג",
+    "line": "green",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.1030738,
+    "lon": 34.7945641
+  },
+  {
+    "name_he": "יהודה המכבי",
+    "line": "green",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.0937784,
+    "lon": 34.7842431
+  },
+  {
+    "name_he": "אבן גבירול ארלוזורוב",
+    "line": "green",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "Interpolated between known stations",
+    "confidence": "low",
+    "lat": 32.0873434,
+    "lon": 34.7822116
+  },
+  {
+    "name_he": "כיכר רבין",
+    "line": "green",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.0809085,
+    "lon": 34.7801802
+  },
+  {
+    "name_he": "קפלן",
+    "line": "green",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.0734365,
+    "lon": 34.7876409
+  },
+  {
+    "name_he": "קרליבך",
+    "line": "green",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.0653221,
+    "lon": 34.7828678
+  },
+  {
+    "name_he": "גינת לוינסקי",
+    "line": "green",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "Interpolated between known stations",
+    "confidence": "low",
+    "lat": 32.0616915,
+    "lon": 34.7760588
+  },
+  {
+    "name_he": "שפירא",
+    "line": "green",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "Interpolated between known stations",
+    "confidence": "low",
+    "lat": 32.0580609,
+    "lon": 34.7692499
+  },
+  {
+    "name_he": "קיבוץ גלויות",
+    "line": "green",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.0544303,
+    "lon": 34.7624409
+  },
+  {
+    "name_he": "פארק החורשות",
+    "line": "green",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.0449763,
+    "lon": 34.7703262
+  },
+  {
+    "name_he": "קריית שלום",
+    "line": "green",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.0448396,
+    "lon": 34.7767582
+  },
+  {
+    "name_he": "צומת חולון",
+    "line": "green",
+    "city_he": "חולון",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.037572,
+    "lon": 34.779659
+  },
+  {
+    "name_he": "תיאטרון חולון",
+    "line": "green",
+    "city_he": "חולון",
+    "status": "planned",
+    "source": "Interpolated between known stations",
+    "confidence": "low",
+    "lat": 32.033661,
+    "lon": 34.7811933
+  },
+  {
+    "name_he": "קוגל",
+    "line": "green",
+    "city_he": "חולון",
+    "status": "planned",
+    "source": "Interpolated between known stations",
+    "confidence": "low",
+    "lat": 32.02975,
+    "lon": 34.7827275
+  },
+  {
+    "name_he": "קראוזה",
+    "line": "green",
+    "city_he": "חולון",
+    "status": "planned",
+    "source": "Interpolated between known stations",
+    "confidence": "low",
+    "lat": 32.0258389,
+    "lon": 34.7842618
+  },
+  {
+    "name_he": "סוקולוב מזרח",
+    "line": "green",
+    "city_he": "חולון",
+    "status": "planned",
+    "source": "Interpolated between known stations",
+    "confidence": "low",
+    "lat": 32.0219279,
+    "lon": 34.785796
+  },
+  {
+    "name_he": "גאולים",
+    "line": "green",
+    "city_he": "חולון",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.0180169,
+    "lon": 34.7873303
+  },
+  {
+    "name_he": "גן הקקטוסים",
+    "line": "green",
+    "city_he": "חולון",
+    "status": "planned",
+    "source": "Interpolated between known stations",
+    "confidence": "low",
+    "lat": 32.0148496,
+    "lon": 34.7679078
+  },
+  {
+    "name_he": "המלאכה",
+    "line": "green",
+    "city_he": "חולון",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.0116822,
+    "lon": 34.7484853
+  },
+  {
+    "name_he": "פארק פרס",
+    "line": "green",
+    "city_he": "חולון",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.0036442,
+    "lon": 34.7974581
+  },
+  {
+    "name_he": "המרכבה",
+    "line": "green",
+    "city_he": "חולון",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.015813,
+    "lon": 34.807676
+  },
+  {
+    "name_he": "חולון מזרח",
+    "line": "green",
+    "city_he": "חולון",
+    "status": "planned",
+    "source": "Interpolated between known stations",
+    "confidence": "low",
+    "lat": 32.0242469,
+    "lon": 34.7990993
+  },
+  {
+    "name_he": "ההסתדרות",
+    "line": "green",
+    "city_he": "חולון",
+    "status": "planned",
+    "source": "Interpolated between known stations",
+    "confidence": "low",
+    "lat": 32.0326809,
+    "lon": 34.7905226
+  },
+  {
+    "name_he": "המכון הטכנולוגי חולון",
+    "line": "green",
+    "city_he": "חולון",
+    "status": "planned",
+    "source": "Interpolated between known stations",
+    "confidence": "low",
+    "lat": 32.0411148,
+    "lon": 34.781946
+  },
+  {
+    "name_he": "לבון",
+    "line": "green",
+    "city_he": "חולון",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.0495487,
+    "lon": 34.7733693
+  },
+  {
+    "name_he": "בגין",
+    "line": "green",
+    "city_he": "חולון",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.0498889,
+    "lon": 34.8392278
+  },
+  {
+    "name_he": "בר-לב",
+    "line": "green",
+    "city_he": "חולון",
+    "status": "planned",
+    "source": "Interpolated suffix",
+    "confidence": "low",
+    "lat": 32.0502291,
+    "lon": 34.9050863
+  },
+  {
+    "name_he": "לסקוב",
+    "line": "green",
+    "city_he": "חולון",
+    "status": "planned",
+    "source": "Interpolated suffix",
+    "confidence": "low",
+    "lat": 32.0505693,
+    "lon": 34.9709448
+  },
+  {
+    "name_he": "פארק הבונים",
+    "line": "green",
+    "city_he": "חולון",
+    "status": "planned",
+    "source": "Interpolated suffix",
+    "confidence": "low",
+    "lat": 32.0509095,
+    "lon": 35.0368033
+  },
+  {
+    "name_he": "נחלת יהודה",
+    "line": "green",
+    "city_he": "ראשון לציון",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 31.985887,
+    "lon": 34.8062396
+  },
+  {
+    "name_he": "הקריה החקלאית",
+    "line": "green",
+    "city_he": "ראשון לציון",
+    "status": "planned",
+    "source": "Interpolated between known stations",
+    "confidence": "low",
+    "lat": 32.0044671,
+    "lon": 34.7904578
+  },
+  {
+    "name_he": "סחרוב",
+    "line": "green",
+    "city_he": "ראשון לציון",
+    "status": "planned",
+    "source": "Interpolated between known stations",
+    "confidence": "low",
+    "lat": 32.0230471,
+    "lon": 34.774676
+  },
+  {
+    "name_he": "ילדי טהרן",
+    "line": "green",
+    "city_he": "ראשון לציון",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.0416272,
+    "lon": 34.7588942
+  },
+  {
+    "name_he": "לישנסקי",
+    "line": "green",
+    "city_he": "ראשון לציון",
+    "status": "planned",
+    "source": "Interpolated between known stations",
+    "confidence": "low",
+    "lat": 32.0213691,
+    "lon": 34.7603127
+  },
+  {
+    "name_he": "משה דיין",
+    "line": "green",
+    "city_he": "ראשון לציון",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.0011111,
+    "lon": 34.7617313
+  },
+  {
+    "name_he": "תל אביב מרכז",
+    "line": "purple",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "Interpolated prefix",
+    "confidence": "low",
+    "lat": 32.0700935,
+    "lon": 34.7884551
+  },
+  {
+    "name_he": "איכילוב",
+    "line": "purple",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "Interpolated prefix",
+    "confidence": "low",
+    "lat": 32.0716432,
+    "lon": 34.7843662
+  },
+  {
+    "name_he": "אבן גבירול ארלוזורוב",
+    "line": "purple",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "Interpolated prefix",
+    "confidence": "low",
+    "lat": 32.0731929,
+    "lon": 34.7802773
+  },
+  {
+    "name_he": "דיזנגוף",
+    "line": "purple",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.0747426,
+    "lon": 34.7761884
+  },
+  {
+    "name_he": "גורדון",
+    "line": "purple",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "Interpolated between known stations",
+    "confidence": "low",
+    "lat": 32.0762923,
+    "lon": 34.7720995
+  },
+  {
+    "name_he": "בוגרשוב",
+    "line": "purple",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.077842,
+    "lon": 34.7680106
+  },
+  {
+    "name_he": "אידלסון",
+    "line": "purple",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.0946481,
+    "lon": 34.7754439
+  },
+  {
+    "name_he": "הכרמל",
+    "line": "purple",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.0685125,
+    "lon": 34.7688014
+  },
+  {
+    "name_he": "מונטיפיורי",
+    "line": "purple",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.0690846,
+    "lon": 34.7896755
+  },
+  {
+    "name_he": "אלנבי ליליינבלום",
+    "line": "purple",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "Interpolated between known stations",
+    "confidence": "low",
+    "lat": 32.0637531,
+    "lon": 34.7814999
+  },
+  {
+    "name_he": "העלייה",
+    "line": "purple",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.0584217,
+    "lon": 34.7733242
+  },
+  {
+    "name_he": "גינת לוינסקי",
+    "line": "purple",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "Interpolated between known stations",
+    "confidence": "low",
+    "lat": 32.0584326,
+    "lon": 34.7763366
+  },
+  {
+    "name_he": "נווה שאנן",
+    "line": "purple",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.0584435,
+    "lon": 34.779349
+  },
+  {
+    "name_he": "ההגנה",
+    "line": "purple",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.0544508,
+    "lon": 34.7848504
+  },
+  {
+    "name_he": "התקווה",
+    "line": "purple",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.0512931,
+    "lon": 34.7880987
+  },
+  {
+    "name_he": "גבעתי",
+    "line": "purple",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.0518953,
+    "lon": 34.817164
+  },
+  {
+    "name_he": "דרך משה דיין",
+    "line": "purple",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "Interpolated between known stations",
+    "confidence": "low",
+    "lat": 32.051637,
+    "lon": 34.8117221
+  },
+  {
+    "name_he": "כפר שלם",
+    "line": "purple",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.0513786,
+    "lon": 34.8062801
+  },
+  {
+    "name_he": "המאבק",
+    "line": "purple",
+    "city_he": "תל אביב-יפו",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.1356718,
+    "lon": 34.8408181
+  },
+  {
+    "name_he": "כורזין",
+    "line": "purple",
+    "city_he": "רמת גן",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.0604836,
+    "lon": 34.8164517
+  },
+  {
+    "name_he": "רזיאל",
+    "line": "purple",
+    "city_he": "רמת גן",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.0575836,
+    "lon": 34.8218246
+  },
+  {
+    "name_he": "הירדן",
+    "line": "purple",
+    "city_he": "רמת גן",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.0682752,
+    "lon": 34.8285479
+  },
+  {
+    "name_he": "אלוף שדה",
+    "line": "purple",
+    "city_he": "רמת גן",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.0589495,
+    "lon": 34.8165543
+  },
+  {
+    "name_he": "רמת אפעל",
+    "line": "purple",
+    "city_he": "רמת גן",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.0474049,
+    "lon": 34.8348342
+  },
+  {
+    "name_he": "קרית קריניצי",
+    "line": "purple",
+    "city_he": "רמת גן",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.0560067,
+    "lon": 34.8475339
+  },
+  {
+    "name_he": "שיבא מרכז",
+    "line": "purple",
+    "city_he": "רמת גן",
+    "status": "planned",
+    "source": "Interpolated suffix",
+    "confidence": "low",
+    "lat": 32.0646085,
+    "lon": 34.8602336
+  },
+  {
+    "name_he": "שיבא דרום",
+    "line": "purple",
+    "city_he": "רמת גן",
+    "status": "planned",
+    "source": "Interpolated suffix",
+    "confidence": "low",
+    "lat": 32.0732103,
+    "lon": 34.8729333
+  },
+  {
+    "name_he": "גני אילן",
+    "line": "purple",
+    "city_he": "קריית אונו",
+    "status": "planned",
+    "source": "Interpolated city fallback",
+    "confidence": "low",
+    "lat": 32.0448409,
+    "lon": 34.8187232
+  },
+  {
+    "name_he": "אוניברסיטת בר אילן מרכז",
+    "line": "purple",
+    "city_he": "גבעת שמואל",
+    "status": "planned",
+    "source": "Interpolated prefix",
+    "confidence": "low",
+    "lat": 32.0737987,
+    "lon": 34.8512803
+  },
+  {
+    "name_he": "אוניברסיטת בר אילן מזרח",
+    "line": "purple",
+    "city_he": "גבעת שמואל",
+    "status": "planned",
+    "source": "Interpolated prefix",
+    "confidence": "low",
+    "lat": 32.0737987,
+    "lon": 34.8522803
+  },
+  {
+    "name_he": "רמת הדר דרום",
+    "line": "purple",
+    "city_he": "גבעת שמואל",
+    "status": "planned",
+    "source": "Interpolated prefix",
+    "confidence": "low",
+    "lat": 32.0737987,
+    "lon": 34.8532803
+  },
+  {
+    "name_he": "פארק רמון",
+    "line": "purple",
+    "city_he": "גבעת שמואל",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.0737987,
+    "lon": 34.8542803
+  },
+  {
+    "name_he": "מסוף גבעת שמואל",
+    "line": "purple",
+    "city_he": "גבעת שמואל",
+    "status": "planned",
+    "source": "Interpolated suffix",
+    "confidence": "low",
+    "lat": 32.0737987,
+    "lon": 34.8552803
+  },
+  {
+    "name_he": "מסובים",
+    "line": "purple",
+    "city_he": "אור יהודה",
+    "status": "planned",
+    "source": "Interpolated prefix",
+    "confidence": "low",
+    "lat": 32.0369756,
+    "lon": 34.8349304
+  },
+  {
+    "name_he": "רמת פנקס",
+    "line": "purple",
+    "city_he": "אור יהודה",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.0346385,
+    "lon": 34.8409781
+  },
+  {
+    "name_he": "קזז",
+    "line": "purple",
+    "city_he": "אור יהודה",
+    "status": "planned",
+    "source": "Interpolated between known stations",
+    "confidence": "low",
+    "lat": 32.0323014,
+    "lon": 34.8470259
+  },
+  {
+    "name_he": "יגאל אלון",
+    "line": "purple",
+    "city_he": "אור יהודה",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.0299644,
+    "lon": 34.8530736
+  },
+  {
+    "name_he": "שמעון פרס",
+    "line": "purple",
+    "city_he": "אור יהודה",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.0394382,
+    "lon": 34.8601796
+  },
+  {
+    "name_he": "צומת סביון",
+    "line": "purple",
+    "city_he": "אור יהודה",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.0330353,
+    "lon": 34.8662781
+  },
+  {
+    "name_he": "מונוסון גדות",
+    "line": "purple",
+    "city_he": "יהוד מונוסון",
+    "status": "planned",
+    "source": "Interpolated prefix",
+    "confidence": "low",
+    "lat": 32.0198028,
+    "lon": 34.8677234
+  },
+  {
+    "name_he": "סביונים",
+    "line": "purple",
+    "city_he": "יהוד מונוסון",
+    "status": "planned",
+    "source": "Interpolated prefix",
+    "confidence": "low",
+    "lat": 32.0236105,
+    "lon": 34.8739973
+  },
+  {
+    "name_he": "צומת יהוד מערב",
+    "line": "purple",
+    "city_he": "יהוד מונוסון",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.0274182,
+    "lon": 34.8802712
+  },
+  {
+    "name_he": "יהוד מרכז",
+    "line": "purple",
+    "city_he": "יהוד מונוסון",
+    "status": "planned",
+    "source": "Interpolated between known stations",
+    "confidence": "low",
+    "lat": 32.0312259,
+    "lon": 34.8865451
+  },
+  {
+    "name_he": "ויצמן",
+    "line": "purple",
+    "city_he": "יהוד מונוסון",
+    "status": "planned",
+    "source": "OSM Overpass",
+    "confidence": "high",
+    "lat": 32.0350336,
+    "lon": 34.892819
+  },
+  {
+    "name_he": "אופק",
+    "line": "purple",
+    "city_he": "יהוד מונוסון",
+    "status": "planned",
+    "source": "Interpolated suffix",
+    "confidence": "low",
+    "lat": 32.0388413,
+    "lon": 34.8990929
+  },
+  {
+    "name_he": "הטייסים",
+    "line": "purple",
+    "city_he": "יהוד מונוסון",
+    "status": "planned",
+    "source": "Interpolated suffix",
+    "confidence": "low",
+    "lat": 32.042649,
+    "lon": 34.9053668
+  }
+]
