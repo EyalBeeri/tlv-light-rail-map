@@ -151,6 +151,17 @@ document.addEventListener('DOMContentLoaded', () => {
 			.trim();
 	}
 
+	function normalizeSearchText(value) {
+		return normalizeText(value)
+			.replace(/[ך]/g, 'כ')
+			.replace(/[ם]/g, 'מ')
+			.replace(/[ן]/g, 'נ')
+			.replace(/[ף]/g, 'פ')
+			.replace(/[ץ]/g, 'צ')
+			.replace(/י{2,}/g, 'י')
+			.replace(/ו{2,}/g, 'ו');
+	}
+
 	function getGeojsonCenter(geojson) {
 		if (!window.turf || !geojson) return null;
 		try {
@@ -218,12 +229,12 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 
 	function getSearchItemKey(item) {
-		return `${item.type}|${normalizeText(item.label)}|${normalizeText(item.secondaryLabel)}`;
+		return `${item.type}|${normalizeSearchText(item.label)}|${normalizeSearchText(item.secondaryLabel)}`;
 	}
 
 	function scoreSearchItem(item, normalizedQuery) {
-		const label = normalizeText(item.label);
-		const secondary = normalizeText(item.secondaryLabel);
+		const label = normalizeSearchText(item.label);
+		const secondary = normalizeSearchText(item.secondaryLabel);
 		let score = 0;
 
 		if (label === normalizedQuery) score += 120;
@@ -393,15 +404,39 @@ document.addEventListener('DOMContentLoaded', () => {
 		}
 	}
 
+	function getIsochroneStyle(station) {
+		if (station && station.isPlanned) {
+			if (station.line === 'purple') {
+				return { color: '#7e22ce', fillColor: '#a855f7', fillOpacity: 0.16, weight: 2, interactive: false };
+			}
+			return { color: '#16a34a', fillColor: '#34d399', fillOpacity: 0.16, weight: 2, interactive: false };
+		}
+
+		return { color: '#34d399', fillColor: '#34d399', fillOpacity: 0.2, weight: 2, interactive: false };
+	}
+
 	function updateIsochrones(minutes) {
 		currentIsochroneLayerGroup.clearLayers();
-		stationsData.forEach((station) => {
+		const activeStations = [...stationsData, ...getActivePlannedStations()];
+		activeStations.forEach((station) => {
 			const name = getStationIsochroneName(station);
 			const polys = isochroneData[name];
 			if (polys && polys[minutes]) {
 				L.geoJSON(polys[minutes], {
-					style: { color: '#34d399', fillColor: '#34d399', fillOpacity: 0.2, weight: 2 },
+					style: getIsochroneStyle(station),
 					interactive: false
+				}).addTo(currentIsochroneLayerGroup);
+				return;
+			}
+
+			if (station.isPlanned) {
+				const lat = toFiniteNumber(station.lat);
+				const lon = toFiniteNumber(station.lon);
+				if (lat === null || lon === null) return;
+
+				L.circle([lat, lon], {
+					...getIsochroneStyle(station),
+					radius: Math.max(120, minutes * 80)
 				}).addTo(currentIsochroneLayerGroup);
 			}
 		});
@@ -651,12 +686,12 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 
 	function buildLocalSearchMatches(query) {
-		const normalizedQuery = normalizeText(query);
+		const normalizedQuery = normalizeSearchText(query);
 		const localMatches = [];
 		const dedupe = new Set();
 
 		for (const [name, poly] of neighborhoodCache.entries()) {
-			const normalizedName = normalizeText(name);
+			const normalizedName = normalizeSearchText(name);
 			if (!normalizedName || !normalizedName.includes(normalizedQuery)) continue;
 
 			const key = `neighborhood:${normalizedName}`;
@@ -677,7 +712,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 		getSearchableStations().forEach((station) => {
 			const displayName = getStationDisplayName(station);
-			const normalizedName = normalizeText(displayName);
+			const normalizedName = normalizeSearchText(displayName);
 			if (!normalizedName || !normalizedName.includes(normalizedQuery)) return;
 
 			const key = `station:${normalizedName}`;
@@ -749,7 +784,7 @@ document.addEventListener('DOMContentLoaded', () => {
 					if (!mergedMap.has(key)) mergedMap.set(key, item);
 				});
 
-				const normalizedQuery = normalizeText(query);
+				const normalizedQuery = normalizeSearchText(query);
 				const mergedItems = Array.from(mergedMap.values())
 					.sort((a, b) => scoreSearchItem(b, normalizedQuery) - scoreSearchItem(a, normalizedQuery))
 					.slice(0, 10);
@@ -770,7 +805,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	}
 
 	function searchLocations(query) {
-		const normalizedQuery = normalizeText(query);
+		const normalizedQuery = normalizeSearchText(query);
 		if (normalizedQuery.length < 2) {
 			resetSearchState();
 			hideSearchResults();
@@ -931,6 +966,7 @@ document.addEventListener('DOMContentLoaded', () => {
 			}
 
 			applyPlannedLayersVisibility();
+			updateIsochrones(walkingMinutes);
 		})
 		.catch((error) => {
 			console.error('Failed to load planned stations:', error);
@@ -1086,6 +1122,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		plannedGreenToggle.addEventListener('change', () => {
 			activePlannedLines.green = Boolean(plannedGreenToggle.checked);
 			applyPlannedLayersVisibility();
+			updateIsochrones(walkingMinutes);
 			refreshRouteCandidatesForCurrentSelection();
 
 			const query = searchInput.value.trim();
@@ -1098,6 +1135,7 @@ document.addEventListener('DOMContentLoaded', () => {
 		plannedPurpleToggle.addEventListener('change', () => {
 			activePlannedLines.purple = Boolean(plannedPurpleToggle.checked);
 			applyPlannedLayersVisibility();
+			updateIsochrones(walkingMinutes);
 			refreshRouteCandidatesForCurrentSelection();
 
 			const query = searchInput.value.trim();
